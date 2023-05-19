@@ -11,8 +11,31 @@ const app = express();
 const multer = require('multer');
 const morgan = require('morgan');
 const exec = require('child_process').exec;
-import { path as ffmpeg } from '@ffmpeg-installer/ffmpeg';
+// const ffmpeg = require('@ffmpeg-installer/ffmpeg').path;
+const MongoClient = require('mongodb').MongoClient
 
+// mongo connection
+const url = 'mongodb://127.0.0.1:27017'
+const dbName = 'video-links'
+MongoClient.connect(
+    url,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    },
+    (err, client) => {
+      if (err) {
+        return console.log(err)
+      }
+  
+      // Specify the database you want to access
+      const db = client.db(`${dbName}`)
+  
+      console.log(`MongoDB Connected: ${url}`)
+    }
+  )
+  
+// morgan config
 app.use(morgan('dev'));
 
 // create directory
@@ -39,7 +62,7 @@ const outputPath = './public/uploads/output-video.mov';
 
 // noise reducer
 const noiseReducer = (req, res) => {
-    exec(`${ffmpeg} -i ${inputPath} -af "highpass=f=200,lowpass=f=3000,afftdn=nf=-25" ${outputPath}`, (err, stdout, stderr) => {
+    exec(`ffmpeg -i ${inputPath} -af "highpass=f=200,lowpass=f=3000,afftdn=nf=-25" ${outputPath}`, (err, stdout, stderr) => {
         if (err) {
             console.log(err);
             return;
