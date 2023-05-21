@@ -1,10 +1,3 @@
-// TODO: 
-// 1. delete files after they are done processing (both input and output)
-// 2. google drive link (that'll require database we'll use mongo) 
-// 3. Queing service 
-
-// 
-
 require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
@@ -36,17 +29,19 @@ app.use(morgan('dev'));
 
 // create directory
 var dir = 'public'
-var subDirectory = 'public/uploads'
+var subDirectory1 = 'public/uploads'
+var subDirectory2 = 'public/downloads'
 
 if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
-    fs.mkdirSync(subDirectory);
+    fs.mkdirSync(subDirectory1);
+    fs.mkdirSync(subDirectory2);
 }
 
 // multer config
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './public/uploads/');
+        cb(null, './public/downloads/');
     },
     filename: function (req, file, cb) {
         cb(null, 'my-video.mov');
@@ -54,7 +49,7 @@ const storage = multer.diskStorage({
 });
 
 const inputPath = './public/uploads/my-video.mov';
-const outputPath = './public/uploads/output-video.mov';
+const outputPath = './public/downloads/output-video.mov';
 
 // noise reducer
 const noiseReducer = (req, res) => {
@@ -122,7 +117,3 @@ app.get('/run', (req, res) => {
 })
 
 app.listen(3000, () => console.log('Server started on port 3000'));
-
-
-
-
