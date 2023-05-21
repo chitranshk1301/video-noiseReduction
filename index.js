@@ -5,36 +5,32 @@
 
 // 
 
+require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const app = express();
 const multer = require('multer');
 const morgan = require('morgan');
 const exec = require('child_process').exec;
-// const ffmpeg = require('@ffmpeg-installer/ffmpeg').path;
-const MongoClient = require('mongodb').MongoClient
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const mongoString = process.env.DATABASE_URL
+const Data = require('./schema');
 
-// mongo connection
-const url = 'mongodb://127.0.0.1:27017'
-const dbName = 'video-links'
-MongoClient.connect(
-    url,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    },
-    (err, client) => {
-      if (err) {
-        return console.log(err)
-      }
-  
-      // Specify the database you want to access
-      const db = client.db(`${dbName}`)
-  
-      console.log(`MongoDB Connected: ${url}`)
-    }
-  )
-  
+app.use(bodyParser.json());
+
+// mongoose config
+mongoose.connect(mongoString);
+const database = mongoose.connection;
+
+database.on('error', (error) => {
+    console.log(error)
+})
+
+database.once('connected', () => {
+    console.log('Database Connected');
+})
+
 // morgan config
 app.use(morgan('dev'));
 
@@ -73,14 +69,24 @@ const noiseReducer = (req, res) => {
 }
 
 // endpoints
-app.get('/',(req,res) => {
+app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 })
 
-app.get('/', (req, res) => {
-    res.send('Hello World');
-    console.log('server is working')
-});
+// post request to upload link to the mongoose database
+app.post('/upload-link', async(req, res) => {
+    const data = new Data({
+        link: req.body.link
+    })
+
+    try {
+        const dataToSave = await data.save();
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
 
 const upload = multer({ storage: storage });
 
@@ -119,4 +125,4 @@ app.listen(3000, () => console.log('Server started on port 3000'));
 
 
 
- 
+

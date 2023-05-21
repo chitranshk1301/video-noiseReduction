@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const dataSchema = new mongoose.Schema({
     link: {
-        required: true,
-        type: String
-    }
+        type: String,
+        required: true
+      }
 })
 
 module.exports = mongoose.model('Data', dataSchema)
